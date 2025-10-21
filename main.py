@@ -61,7 +61,7 @@ def main():
     parser.add_argument('--stream', action='store_true')
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--load', action='store_true')
-    parser.add_argument('--host_ip', type=str, default="YOUR IP") # for stream
+    parser.add_argument('--host_ip', type=str, default="localhost") # for stream
     args = parser.parse_args()
 
     if args.stream:
