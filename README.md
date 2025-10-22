@@ -66,7 +66,7 @@ python tools/prepare_scene.py --filename scene0001_00.sens --output_path sample/
 
 ### Model Preparation
 
-Please download the pretrained weight for SEEM from [here](https://huggingface.co/xdecoder/SEEM/blob/main/seem_focall_v1.pt) and put it in as `openfusion/zoo/xdecoder_seem/checkpoints/seem_focall_v1.pt`.
+Please download the pretrained weight for SEEM from [huggingface.co](https://huggingface.co/xdecoder/SEEM/blob/main/seem_focall_v1.pt) or [hf-mirror.com](https://hf-mirror.com/xdecoder/SEEM/blob/main/seem_focall_v1.pt) and put it in as `openfusion/zoo/xdecoder_seem/checkpoints/seem_focall_v1.pt`.
 
 ### Run OpenFusion
 
