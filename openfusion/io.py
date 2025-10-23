@@ -171,11 +171,12 @@ class SocketIO(BaseIO):
         pose_matrix = np.eye(4)
         pose_matrix[:3, :3] = r
         pose_matrix[:3, 3] = pose_quat[:3]
-        if self.initial_pose is None:
-            self.initial_pose = pose_matrix
-        return np.linalg.inv(
-            relative_transform(self.initial_pose, pose_matrix).astype(np.float64) @ self.pose2rgbd
-        )
+        return pose_matrix
+        # if self.initial_pose is None:
+        #     self.initial_pose = pose_matrix
+        # return np.linalg.inv(
+        #     relative_transform(self.initial_pose, pose_matrix).astype(np.float64) @ self.pose2rgbd
+        # )
 
 
 if __name__ == "__main__":
