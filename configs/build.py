@@ -56,8 +56,8 @@ PARAMS = {
         "voxel_size": 5.0 / 512,
         "block_resolution": 8,
         "block_count": 100000, # will be increased automatically if needed
-        "img_size": (640,360),
-        "input_size": (640,360)
+        "img_size": (1280, 720),
+        "input_size": (1280, 720),
     },
 }
 
