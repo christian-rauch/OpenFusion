@@ -108,8 +108,18 @@ def main():
         # points, colors = slam.query("Window", topk=3)
         # points, colors = slam.query("there is a stainless steel fridge in the ketchen", topk=3)
         points, colors = slam.semantic_query([
-            "vase", "table", "tv shelf", "curtain", "wall", "floor", "ceiling", "door", "tv",
-            "room plant", "light", "sofa", "cushion", "wall paint", "chair"
+            "sugar",
+            "milk",
+            "faucet",
+            "towel",
+            "detergent",
+            "chair",
+            "coffee machine",
+            "sink",
+            "socket",
+            "sponge",
+            "paper towel",
+            "table top",
         ])
         show_pc(points, colors, slam.point_state.poses)
         save_pc(points, colors, f"{args.data}_{args.scene}/semantic_pc.ply")
