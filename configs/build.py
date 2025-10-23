@@ -13,7 +13,7 @@ PARAMS = {
         "block_resolution": 8,
         "block_count": 100000, # will be increased automatically if needed
         "img_size": (1280,720),
-        "input_size": (640,360)
+        "input_size": (1280,720),
     },
     "icl": {
         "dataset": ICL,
