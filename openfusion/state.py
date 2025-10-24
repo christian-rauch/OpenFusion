@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -419,6 +420,8 @@ class VLState(BaseState):
     def update(self, color, depth, extrinsic, res_dict:dict={}):
         frustum_block_coords, extrinsic = super().update(color, depth, extrinsic)
 
+        # print("update", color.shape)
+
         # NOTE: when the switch is off return without semantic integration
         if not res_dict:
             return
@@ -773,27 +776,103 @@ class VLState(BaseState):
             buf_indices
         ].view(-1, self.num_obj_points_per_block) # (N, O)
 
+        print("emb_keys> mask_key", mask_key.shape)
+        print("mask_key ...", mask_key.min(), mask_key.max())
+
         t_emb = t_emb / (t_emb.norm(dim=-1, keepdim=True) + 1e-7) # (C, D)
+        print("t_emb", t_emb.shape)
         # NOTE: exclude BG in semantic mode
         valid_keys = torch.unique(mask_key)[1:]
+        print("valid_keys", valid_keys.shape)
+        print("valid_keys ...", valid_keys.min(), valid_keys.max())
         embed = self.emb_dict[valid_keys].to(t_emb.device)
+        print("embed", embed.shape)
         mask_pred_caption = embed / (embed.norm(dim=-1, keepdim=True) + 1e-7) # (E, D)
+        print("mask_pred_caption", mask_pred_caption.shape)
+        # import pickle as pkl
+        # with open(os.path.join("/tmp", "embeddings-OF.pkl"), 'wb') as f:
+        #     pkl.dump(query_embeddings, f, protocol=pkl.HIGHEST_PROTOCOL)
         mask_cls = torch.einsum("cd,nd->cn", t_emb, mask_pred_caption) # (C, E)
+        print("mask_cls", mask_cls.shape)
         outputs_class = F.softmax(mask_cls, dim=0) # (C, E)
+        print("outputs_class", outputs_class.shape)
 
         mask_key = mask_key.flatten(0)
+        print("points", points.shape)
+        print("mask_key", mask_key.shape)
+        print("mask_key ...", mask_key.min(), mask_key.max())
         mask_pred = torch.zeros(mask_key.shape[0], torch.unique(mask_key)[-1]+1, device=t_emb.device)
+        print("mask_pred", mask_pred.shape)
         mask_pred.scatter_(1, mask_key.to(t_emb.device).unsqueeze(-1), mask_conf.view(-1,1).to(t_emb.device))
+        print("mask_pred", mask_pred.shape)
         semseg = torch.einsum("cn,qn->qc", outputs_class, mask_pred[:, valid_keys]).argmax(1).cpu() # (M,)
+        print("semseg", semseg.shape)
 
         poi = self.emb_coords[
             buf_indices
         ].view(-1, 3)
+        print("emb_coords> poi", poi.shape)
         poi = poi[mask_key != 0].view(-1,3).numpy() # (M',)
+        print("poi (mask_key != 0)", poi.shape)
         semseg = semseg[mask_key != 0].numpy()
+        print("semseg (mask_key != 0)", semseg.shape)
+        # np.savetxt("/tmp/poi.xyz", poi)
+
+        # visembed = mask_pred_caption[mask_key].cpu().numpy()
+        # # print("visembed", visembed.shape)
+        # # np.savez("/tmp/visembed", visembed)
+        # pc_attributes = {
+        #     "positions": poi,
+        #     "embeddings": visembed,
+        # }
+        # np.savez("/tmp/pcd_embeddings", **pc_attributes,)
 
         tree = KDTree(poi, leaf_size=10)
         dist, ind = tree.query(points, k=10)
+
+        print("dist", dist.shape)
+        print("dist", dist[:5, :])
+        print("ind", ind.shape)
+        print("ind", ind[:5, :])
+        print("ind range", ind.min(), ind.max())
+
+        # mask ID != 0 for every point
+        # point_mask_id = torch.ones(points.shape[0], 1)
+        point_mask_id = mask_key[mask_key!=0][ind[:,0]]
+        print("point_mask_id", point_mask_id.shape)
+        print("point_mask_id range", point_mask_id.min(), point_mask_id.max())
+        # blub = mask_pred_caption[bla]
+        # print("blub", blub.shape)
+        # point_key_id = torch.ones(points.shape[0], 1)
+        valid_keys_inv = torch.zeros(valid_keys.max()+1, dtype=torch.int)
+        for i, k in enumerate(valid_keys):
+            valid_keys_inv[k] = i
+        print("valid_keys_inv", valid_keys_inv.shape)
+        print("valid_keys_inv range", valid_keys_inv.min(), valid_keys_inv.max())
+
+        bla = valid_keys_inv[point_mask_id]
+        print("bla", bla.shape)
+        print("bla range", bla.min(), bla.max())
+        point_embed = mask_pred_caption[valid_keys_inv[point_mask_id]]
+        print("point_embed", point_embed.shape)
+
+        env_name = "OPENFUSION_EXPORT_PATH"
+        if env_name in os.environ:
+            export_dir = os.environ[env_name]
+        else:
+            export_dir = "/tmp"
+
+        # np.savetxt("/tmp/points.xyz", points.cpu().numpy())
+        pcd_colour = o3d.geometry.PointCloud()
+        pcd_colour.points = o3d.utility.Vector3dVector(points)
+        pcd_colour.colors = o3d.utility.Vector3dVector(colors)
+        o3d.io.write_point_cloud(os.path.join(export_dir, "pcd_colour.ply"), pcd_colour, write_ascii=False)
+        pc_attributes = {
+            "positions": points,
+            "colors": colors,
+            "embeddings": point_embed.cpu().numpy(),
+        }
+        np.savez(os.path.join(export_dir, "pcd_embeddings"), **pc_attributes,)
 
         cls = [cmap(np.argmax(np.bincount(m, weights=1/(1+d)))) for d, m in zip(dist, semseg[ind])]
         colors = np.array(cls)[:,:3]
