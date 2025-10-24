@@ -345,6 +345,13 @@ class VLSLAM(BaseSLAM):
             colors (np.array): colored points
         """
         t_emb = self.vl_model.encode_prompt(query, task="default")
+
+        # store text embeddings
+        query_embeddings = dict(zip(query, t_emb.cpu().numpy(), strict=True))
+        import pickle as pkl
+        with open(os.path.join("/tmp", "embeddings-OF.pkl"), 'wb') as f:
+            pkl.dump(query_embeddings, f, protocol=pkl.HIGHEST_PROTOCOL)
+
         if points is None or colors is None:
             assert points is None and colors is None, "[*] points and colors should be both None or provided"
             points, colors = self.point_state.get_pc(n_points)
