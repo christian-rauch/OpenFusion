@@ -357,7 +357,7 @@ class VLSLAM(BaseSLAM):
             points, colors = self.point_state.get_pc(n_points)
         if cmap is None:
             cmap = rand_cmap(len(query), type="bright", first_color_black=False)
-            get_cmap_legend(cmap, query)
+            # get_cmap_legend(cmap, query)
         return self.point_state.semantic_query(t_emb, points, colors, cmap)
 
     @torch.no_grad()

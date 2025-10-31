@@ -121,7 +121,7 @@ def main():
             "paper towel",
             "table top",
         ])
-        show_pc(points, colors, slam.point_state.poses)
+        # show_pc(points, colors, slam.point_state.poses)
         save_pc(points, colors, f"{args.data}_{args.scene}/semantic_pc.ply")
 
 if __name__ == "__main__":
