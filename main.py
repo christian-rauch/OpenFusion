@@ -1,6 +1,8 @@
 import argparse
 import os
 import time
+import signal
+from functools import partial
 import numpy as np
 from tqdm import tqdm
 import open3d as o3d
@@ -12,22 +14,25 @@ from openfusion.utils import (
 from configs.build import get_config
 
 
+def signal_handler(slam: BaseSLAM, args, sig, frame):
+    slam.stop_thread()
+    if args.live:
+        slam.stop_query_thread()
+        slam.stop_monitor_thread()
+
+
 def stream_loop(args, slam:BaseSLAM):
     if args.save:
         slam.export_path = f"{args.data}_live/{args.algo}.npz"
 
     slam.start_thread()
+    signal.signal(signal.SIGINT, partial(signal_handler, slam, args))
     if args.live:
         slam.start_monitor_thread()
         slam.start_query_thread()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        slam.stop_thread()
-        if args.live:
-            slam.stop_query_thread()
-            slam.stop_monitor_thread()
+
+    while slam.control_thread_enabled:
+        time.sleep(1)
 
 
 def dataset_loop(args, slam:BaseSLAM, dataset:Dataset):
