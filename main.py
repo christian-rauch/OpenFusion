@@ -108,24 +108,69 @@ def main():
     o3d.io.write_triangle_mesh(f"{args.data}_{args.scene}/color_mesh.ply", mesh)
     o3d.io.write_triangle_mesh(f"{args.data}_{args.scene}/color_mesh.glb", mesh)
 
+    classes_nyu40 = [
+        "unlabeled",
+        "wall",
+        "floor",
+        "cabinet",
+        "bed",
+        "chair",
+        "sofa",
+        "table",
+        "door",
+        "window",
+        "bookshelf",
+        "picture",
+        "counter",
+        "blinds",
+        "desk",
+        "shelves",
+        "curtain",
+        "dresser",
+        "pillow",
+        "mirror",
+        "floormat",
+        "clothes",
+        "ceiling",
+        "books",
+        "refrigerator",
+        "television",
+        "paper",
+        "towel",
+        "showercurtain",
+        "box",
+        "whiteboard",
+        "person",
+        "nightstand",
+        "toilet",
+        "sink",
+        "lamp",
+        "bathtub",
+        "bag",
+        "otherstructure",
+        "otherfurniture",
+        "otherprop",
+    ]
+
     # NOTE: modify below to play with query
     if args.algo in ["cfusion", "vlfusion"]:
         # points, colors = slam.query("Window", topk=3)
         # points, colors = slam.query("there is a stainless steel fridge in the ketchen", topk=3)
-        points, colors = slam.semantic_query([
-            "sugar",
-            "milk",
-            "faucet",
-            "towel",
-            "detergent",
-            "chair",
-            "coffee machine",
-            "sink",
-            "socket",
-            "sponge",
-            "paper towel",
-            "table top",
-        ])
+        # points, colors = slam.semantic_query([
+        #     "sugar",
+        #     "milk",
+        #     "faucet",
+        #     "towel",
+        #     "detergent",
+        #     "chair",
+        #     "coffee machine",
+        #     "sink",
+        #     "socket",
+        #     "sponge",
+        #     "paper towel",
+        #     "table top",
+        # ])
+        points, colors = slam.semantic_query(classes_nyu40)
         # show_pc(points, colors, slam.point_state.poses)
         save_pc(points, colors, f"{args.data}_{args.scene}/semantic_pc.ply")
 

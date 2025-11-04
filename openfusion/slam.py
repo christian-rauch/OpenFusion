@@ -349,7 +349,7 @@ class VLSLAM(BaseSLAM):
         # store text embeddings
         query_embeddings = dict(zip(query, t_emb.cpu().numpy(), strict=True))
         import pickle as pkl
-        with open(os.path.join("/tmp", "embeddings-OF.pkl"), 'wb') as f:
+        with open(os.path.join("/tmp", "embeddings-NYU40-OF.pkl"), 'wb') as f:
             pkl.dump(query_embeddings, f, protocol=pkl.HIGHEST_PROTOCOL)
 
         if points is None or colors is None:
